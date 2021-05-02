@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS staging.abs_2016_census_g02_nsw_lga;

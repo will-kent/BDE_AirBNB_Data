@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS mart.monthly_neighbourhood_stats (
 
 CREATE TABLE IF NOT EXISTS mart.monthly_accommodation_type_stats (
     month DATE NOT NULL
-    ,max_guests INT NOT NULL
+    ,accommodates INT NOT NULL
     ,room_type VARCHAR(100) NOT NULL
     ,property_type VARCHAR(255) NOT NULL
     ,active_listings_rate NUMERIC(7,4)
@@ -38,6 +38,6 @@ CREATE TABLE IF NOT EXISTS mart.monthly_host_neighbourhood_stats (
   month DATE NOT NULL
   ,host_neighbourhood VARCHAR(255) NOT NULL
   ,num_of_hosts INT
-  ,est_revenue NUMERIC(8,2)
-  ,est_revenue_per_host NUMERIC(8,2)
+  ,est_revenue NUMERIC(12,2)
+  ,est_revenue_per_host NUMERIC(12,2)
 );

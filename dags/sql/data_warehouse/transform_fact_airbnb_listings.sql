@@ -24,7 +24,7 @@ SELECT COALESCE(rd.date_id, -999) AS run_date_id
     ,COALESCE(n.neighbourhood_id,-999) AS listing_neighbourhood_id
     ,COALESCE(a.accommodation_id, -999) AS accommodation_id
     ,COALESCE(lga.lga_id, -999) AS lga_id
-    ,-999 AS host_neighbourhood_id
+    ,COALESCE(hn.neighbourhood_id, -999) AS host_neighbourhood_id
     ,COALESCE(h.host_id, -999) AS host_id
     ,CASE
     	WHEN  has_availability = 't' THEN 1
@@ -52,4 +52,8 @@ from staging.listings l
         ON l.neighbourhood_cleansed = m.neighbourhood_name
     LEFT JOIN dwh.dim_local_government_area lga
         ON m.lga_name = lga.lga_name
+    LEFT JOIN staging.host_neighbourhood_mapping hnm
+        ON l.host_neighbourhood = hnm.host_neighbourhood
+    LEFT JOIN dwh.dim_neighbourhood hn
+        ON hnm.neighbourhood_cleansed = hn.neighbourhood_name
 ;

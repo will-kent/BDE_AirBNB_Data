@@ -24,6 +24,14 @@ CREATE TABLE IF NOT EXISTS dwh.dim_local_government_area (
     ,lga_reference VARCHAR(20) UNIQUE
     ,lga_name VARCHAR(255) NOT NULL
     ,state_name VARCHAR(50) NOT NULL
+    ,median_age INT NOT NULL
+    ,median_mortgage_repayment NUMERIC(10,2) NOT NULL
+    ,median_weekly_personal_income NUMERIC(10,2) NOT NULL
+    ,median_weekly_family_income NUMERIC(10,2) NOT NULL
+    ,median_weekly_household_income NUMERIC(10,2)
+    ,median_weekly_rent NUMERIC(10,2) NOT NULL
+    ,avg_persons_per_bedroom NUMERIC(8,2)
+    ,avg_household_size NUMERIC(8,2)
 );
 
 CREATE TABLE IF NOT EXISTS dwh.dim_host (
@@ -49,6 +57,43 @@ CREATE TABLE IF NOT EXISTS dwh.fact_airbnb_listings (
     ,num_of_stays INT
     ,total_num_reviews INT
     ,review_scores_rating NUMERIC(5,2)
+);
+
+CREATE TABLE IF NOT EXISTS dwh.fact_lga_demographics (
+    lga_id INT UNIQUE REFERENCES dwh.dim_local_government_area(lga_id)
+    ,total_pop INT NOT NULL
+    ,total_pop_male INT NOT NULL
+    ,total_pop_female INT NOT NULL
+    ,total_pop_age_0_4 INT NOT NULL
+    ,total_pop_age_5_14 INT NOT NULL
+    ,total_pop_age_15_19 INT NOT NULL
+    ,total_pop_age_20_24 INT NOT NULL
+    ,total_pop_age_25_34 INT NOT NULL
+    ,total_pop_age_35_44 INT NOT NULL
+    ,total_pop_age_45_54 INT NOT NULL
+    ,total_pop_age_55_64 INT NOT NULL
+    ,total_pop_age_65_74 INT NOT NULL
+    ,total_pop_age_75_84 INT NOT NULL
+    ,total_pop_age_85_over INT NOT NULL
+    ,total_pop_aboriginal INT NOT NULL
+    ,total_pop_torres_strait_islander INT NOT NULL
+    ,total_pop_birthplace_australia INT NOT NULL
+    ,total_pop_birthplace_elsewhere INT NOT NULL
+    ,total_pop_home_language_english_only INT NOT NULL
+    ,total_pop_home_language_other INT NOT NULL
+    ,total_pop_australia_citizen INT NOT NULL
+    ,total_pop_age_0_4_in_education INT NOT NULL
+    ,total_pop_age_5_14_in_education INT NOT NULL
+    ,total_pop_age_15_19_in_education INT NOT NULL
+    ,total_pop_age_20_24_in_education INT NOT NULL
+    ,total_pop_age_25_over_in_education INT NOT NULL
+    ,total_pop_completed_year_12 INT NOT NULL
+    ,total_pop_completed_year_11 INT NOT NULL
+    ,total_pop_completed_year_10 INT NOT NULL
+    ,total_pop_completed_year_9 INT NOT NULL
+    ,total_pop_completed_year_8_below INT NOT NULL
+    ,total_pop_private_dwelling INT NOT NULL
+    ,total_pop_other_dwelling INT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS dwh.mapping_neighbourhood_to_lga (

@@ -6,7 +6,14 @@ WHERE NOT EXISTS (SELECT 1 FROM dwh.dim_date WHERE date_id = -999);
 INSERT INTO dwh.dim_neighbourhood(neighbourhood_id, neighbourhood_name)
 OVERRIDING SYSTEM VALUE
 SELECT -999, 'Unknown'
-WHERE NOT EXISTS (SELECT 1 FROM dwh.dim_neighbourhood WHERE neighbourhood_id = -999);
+WHERE NOT EXISTS (SELECT 1 FROM dwh.dim_neighbourhood WHERE neighbourhood_id = -999)
+UNION ALL
+SELECT -1, 'Outside Australia'
+WHERE NOT EXISTS (SELECT 1 FROM dwh.dim_neighbourhood WHERE neighbourhood_id = -1)
+UNION ALL
+SELECT -2, 'Australia - outside Sydney'
+WHERE NOT EXISTS (SELECT 1 FROM dwh.dim_neighbourhood WHERE neighbourhood_id = -2);
+
 
 INSERT INTO dwh.dim_accommodation(accommodation_id, max_guests, room_type, property_type)
 OVERRIDING SYSTEM VALUE
@@ -18,9 +25,11 @@ OVERRIDING SYSTEM VALUE
 SELECT -999, -999, 'Unknown', '1900-01-01', -999, FALSE
 WHERE NOT EXISTS (SELECT 1 FROM dwh.dim_host WHERE host_id = -999);
 
-INSERT INTO dwh.dim_local_government_area(lga_id, lga_reference, lga_name, state_name)
+INSERT INTO dwh.dim_local_government_area(lga_id, lga_reference, lga_name, state_name, median_age,
+    median_mortgage_repayment, median_weekly_personal_income, median_weekly_family_income,
+    median_weekly_household_income, median_weekly_rent, avg_persons_per_bedroom, avg_household_size)
 OVERRIDING SYSTEM VALUE
-SELECT -999, 'Unknown', 'Unknown', 'Unknown'
+SELECT -999, 'Unknown', 'Unknown', 'Unknown', -1, -1, -1, -1, -1, -1, -1, -1
 WHERE NOT EXISTS (SELECT 1 FROM dwh.dim_local_government_area WHERE lga_id = -999);
 
 -- Also need to populate mapping tables
@@ -44,7 +53,7 @@ INSERT INTO dwh.mapping_neighbourhood_to_lga (
     neighbourhood_name
     ,lga_name
     )
-SELECT *
+SELECT  s.*
 FROM    starting_values s
     LEFT JOIN dwh.mapping_neighbourhood_to_lga d
         ON s.neighbourhood = d.neighbourhood_name

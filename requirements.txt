@@ -1,0 +1,6 @@
+airflow=2.0.1
+datetime=4.3
+pandas=1.2.4
+psycopg2=2.8.6
+os
+sys

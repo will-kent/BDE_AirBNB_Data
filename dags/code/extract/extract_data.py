@@ -13,9 +13,11 @@ def _get_airbnb_filename(period, suffix):
     return filepath
 
 
-def _get_abs_file_name(filename):
+def _get_csv_file_name(filename, folder):
     file_path = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.join(file_path, "./../../data/ABS/")
+    base_folder = "./../../data/"
+    csv_folder = base_folder + folder + "/"
+    path = os.path.join(file_path, csv_folder)
     filepath = path + filename
     return filepath
 
@@ -72,7 +74,7 @@ def get_airbnb_data(hook, execution_date, file_suffix, cols, tablename):
     logging.info(string)
 
 
-def get_abs_data(hook, file, cols, tablename):
+def get_csv_data(hook, file, cols, tablename, folder):
     start = dt.datetime.now()
 
     # Set connection
@@ -80,7 +82,7 @@ def get_abs_data(hook, file, cols, tablename):
     cursor = conn.cursor()
 
     # Set filename
-    file_name = _get_abs_file_name(file)
+    file_name = _get_csv_file_name(file, folder)
 
     # Read CSV file and load data to pandas dataframe
     df = pd.read_csv(file_name, header=0)

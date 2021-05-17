@@ -2,7 +2,7 @@ WITH lga AS(
     SELECT lga_code_2016
         ,TRIM(SPLIT_PART(lga_name_2016,'(',1)) as lga_name_2016
         ,state_name_2016
-    FROM staging.lga_2016_nsw
+    FROM staging.abs_lga_2016_nsw
     WHERE lga_name_2016 in ('Inner West (A)','Cumberland (A)','Canterbury-Bankstown (A)'
     ,'Georges River (A)','Northern Beaches (A)','Blacktown (C)','Botany Bay (C)','Burwood (A)'
     ,'Camden (A)','Campbelltown (C) (NSW)','Canada Bay (A)','Fairfield (C)','Hornsby (A)'

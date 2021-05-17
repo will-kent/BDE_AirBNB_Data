@@ -7,7 +7,8 @@ import sys
 
 def _get_merge_query(table, cols, key):
     try:
-        merge_query = """INSERT INTO %s(%s) VALUES %%s 
+        merge_query = """INSERT INTO %s(%s) OVERRIDING SYSTEM VALUE 
+        VALUES %%s 
         ON CONFLICT (%s) DO NOTHING
         """ % (table, cols, key)
     except Exception as e:
@@ -30,6 +31,7 @@ def _merge_data(conn, cursor, query, tuple):
 
 def _create_date_table(start, end):
     df = pd.DataFrame({"date": pd.date_range(start, end)})
+    df["date_id"] = df['date'].astype(str).apply(lambda x: x.replace('-', '')).astype(int)
     df["month"] = df.date.dt.month
     df["quarter"] = df.date.dt.quarter
     df["year"] = df.date.dt.year

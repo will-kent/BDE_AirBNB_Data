@@ -21,17 +21,17 @@ CREATE TABLE IF NOT EXISTS mart.monthly_accommodation_type_stats (
     ,room_type VARCHAR(100) NOT NULL
     ,property_type VARCHAR(255) NOT NULL
     ,active_listings_rate NUMERIC(7,4)
-    ,min_price_active_listings NUMERIC(8,2)
-    ,max_price_active_listings NUMERIC(8,2)
-    ,med_price_active_listings NUMERIC(8,2)
-    ,avg_price_active_listings NUMERIC(8,2)
+    ,min_price_active_listings NUMERIC(10,2)
+    ,max_price_active_listings NUMERIC(10,2)
+    ,med_price_active_listings NUMERIC(10,2)
+    ,avg_price_active_listings NUMERIC(10,2)
     ,distinct_hosts INT
     ,super_host_rate NUMERIC(7,4)
     ,avg_review_score_rating NUMERIC(7,4)
-    ,pct_change_active_listings NUMERIC(7,4)
-    ,pct_change_inactive_listings NUMERIC(7,4)
+    ,pct_change_active_listings NUMERIC(12,4)
+    ,pct_change_inactive_listings NUMERIC(12,4)
     ,total_num_of_stays INT
-    ,est_revenue_per_listing NUMERIC(8,2)
+    ,est_revenue_per_listing NUMERIC(10,2)
 );
 
 CREATE TABLE IF NOT EXISTS mart.monthly_host_neighbourhood_stats (

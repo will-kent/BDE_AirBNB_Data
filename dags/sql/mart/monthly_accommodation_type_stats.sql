@@ -15,12 +15,12 @@ WITH base AS (
 		,a.property_type AS property_type
 		,a.room_type AS room_type
 		,a.max_guests AS accommodates
-		,(SUM(f.is_available::NUMERIC(7,4))/COUNT(*)) * 100 AS active_listings_rate
+		,(SUM(f.is_available * 1.0)/COUNT(*)) * 100 AS active_listings_rate
 		,COUNT(DISTINCT f.host_id) AS distinct_hosts
 		,COUNT(DISTINCT CASE
 		        WHEN h.is_super_host THEN h.host_id
 			    ELSE NULL
-			    END)::NUMERIC(7,4) / COUNT(DISTINCT h.host_id) * 100 AS super_host_rate
+			    END) * 1.0 / COUNT(DISTINCT h.host_id) * 100 AS super_host_rate
 	FROM dwh.fact_airbnb_listings f
 		JOIN dwh.dim_accommodation a
 			ON f.accommodation_id = a.accommodation_id
@@ -135,13 +135,13 @@ WITH history AS (
 		,CASE
 			WHEN LAG(active_listings, 1, 0) over (PARTITION BY property_type, room_type, accommodates ORDER BY run_date) = 0
 			THEN 0
-			ELSE (active_listings - LAG(active_listings, 1, 0) over (PARTITION BY property_type, room_type, accommodates ORDER BY run_date))::NUMERIC(7,4)
+			ELSE (active_listings - LAG(active_listings, 1, 0) over (PARTITION BY property_type, room_type, accommodates ORDER BY run_date)) * 1.0
 				/ LAG(active_listings, 1) over (PARTITION BY property_type, room_type, accommodates ORDER BY run_date)
 			END AS pct_change_active_listings
 		,CASE
 			when LAG(inactive_listings, 1, 0) over (PARTITION BY property_type, room_type, accommodates ORDER BY run_date) = 0
 			then 0
-			else (inactive_listings - LAG(inactive_listings, 1, 0) over (PARTITION BY property_type, room_type, accommodates ORDER BY run_date))::NUMERIC(7,4)
+			else (inactive_listings - LAG(inactive_listings, 1, 0) over (PARTITION BY property_type, room_type, accommodates ORDER BY run_date)) * 1.0
 				/ LAG(inactive_listings, 1) over (PARTITION BY property_type, room_type, accommodates ORDER BY run_date)
 			END AS pct_change_inactive_listings
 	FROM history

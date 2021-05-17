@@ -50,6 +50,11 @@ def get_airbnb_data(hook, execution_date, file_suffix, cols, tablename):
     cursor = conn.cursor()
 
     # Read Gzip file load data to pandas dataframe
+    if not os.path.isfile(file_name):
+        string = "{} does not exist; skipping".format(file_name)
+        logging.info(string)
+        return None
+
     df = pd.read_csv(file_name, compression="gzip", header=0)
 
     # Limit dataframe by required columns

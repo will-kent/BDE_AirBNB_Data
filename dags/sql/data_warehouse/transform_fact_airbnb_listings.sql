@@ -4,6 +4,32 @@ WHERE f.run_date_id = d.date_id
 AND d.date = '{{ ds }}'
 ;
 
+WITH base_listings AS (
+    SELECT  CASE
+            WHEN (last_scraped SIMILAR TO '[0-9]+/[0-9]+/[0-9]+')
+            THEN TO_DATE(last_scraped, 'dd/mm/yy')
+            WHEN (last_scraped SIMILAR TO '[0-9]+\-[0-9]+\-[0-9]+')
+            THEN TO_DATE(last_scraped, 'yyyy-mm-dd')
+            ELSE '1900-01-01'::DATE
+            END AS last_scraped
+        ,host_id
+        ,neighbourhood_cleansed
+        ,accommodates
+		,room_type
+		,property_type
+		,host_neighbourhood
+		,has_availability
+		,CASE
+			WHEN (price SIMILAR TO '\$\d+(,\d+)*.\d+')
+			THEN TO_NUMBER(price, 'L999G999.99')::NUMERIC(8,2)
+			ELSE price::NUMERIC(8,2)
+			END AS price
+		,availability_30
+		,number_of_reviews
+        ,review_scores_rating
+    FROM    staging.listings l
+)
+
 INSERT INTO dwh.fact_airbnb_listings (
     run_date_id
     ,scrape_date_id
@@ -30,16 +56,20 @@ SELECT COALESCE(rd.date_id, -999) AS run_date_id
     	WHEN  has_availability = 't' THEN 1
     	ELSE 0
     	END AS is_available
-    ,TO_NUMBER(price, '$999G999.99')::NUMERIC(8,2) AS price
+    ,price AS price
     ,availability_30::INT AS future_availability_30d
-    ,30 - availability_30::INT AS num_of_stays
+    ,CASE
+        WHEN has_availability = 't'
+        THEN 30 - availability_30::INT
+        ELSE 0
+        END AS num_of_stays
     ,number_of_reviews::INT AS total_num_reviews
     ,NULLIF(review_scores_rating,'NaN')::NUMERIC(5,2) AS review_scores_rating
-from staging.listings l
+from base_listings l
     LEFT JOIN dwh.dim_date rd
         ON '{{ ds }}' = rd.date
     LEFT JOIN dwh.dim_date sd
-        ON COALESCE(NULLIF(l.last_scraped,'NaN'),'1900-01-01')::DATE = sd.date
+        ON last_scraped = sd.date
 	LEFT JOIN dwh.dim_host h
 		ON l.host_id = CAST(h.source_host_id AS VARCHAR(50))
 	LEFT JOIN dwh.dim_neighbourhood n

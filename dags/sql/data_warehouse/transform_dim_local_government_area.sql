@@ -45,10 +45,10 @@ SELECT l.lga_code_2016
 	,g2.median_age_persons
 	,g2.median_mortgage_repay_monthly
 	,g2.median_tot_prsnl_inc_weekly
-	,g2.median_rent_weekly
 	,g2.median_tot_fam_inc_weekly
-	,g2.average_num_psns_per_bedroom
 	,g2.median_tot_hhd_inc_weekly
+	,g2.median_rent_weekly
+	,g2.average_num_psns_per_bedroom
 	,g2.average_household_size
 FROM lga l
 	JOIN lga_census_g02 g2

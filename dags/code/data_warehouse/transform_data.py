@@ -38,6 +38,17 @@ def _create_date_table(start, end):
     return df
 
 
+def _return_count_of_records(cursor, query):
+    try:
+        cursor.execute(query)
+        result = cursor.fetchone()
+        cnt = result[0]
+        return cnt
+    except Exception as e:
+        logging.error(e)
+        return -1
+
+
 def transform_dim_date(hook, table, key, start_date, end_date):
     start = dt.datetime.now()
 
@@ -58,7 +69,7 @@ def transform_dim_date(hook, table, key, start_date, end_date):
     # Check result of merge
     if result == "Failure":
         logging.error("FAILURE")
-        sys.exit("Failure to merge dim_date")
+        sys.exit(1)
 
     end = dt.datetime.now()
     process_time = abs((end - start).seconds)
@@ -66,3 +77,36 @@ def transform_dim_date(hook, table, key, start_date, end_date):
     # Log processing time
     string = "{} successfully merged in {} seconds".format(table, process_time)
     logging.info(string)
+
+
+def post_load_listings_check(hook, date):
+    # Connection details
+    conn = hook.get_conn()
+    cursor = conn.cursor()
+
+    staging_query = "SELECT COUNT(*) FROM staging.listings"
+    dwh_query = """SELECT COUNT(*) FROM dwh.fact_airbnb_listings f
+    JOIN dwh.dim_date dd 
+        ON f.run_date_id = dd.date_id
+    WHERE dd.date = '{}'
+    """.format(date)
+
+    try:
+        staging_cnt = _return_count_of_records(cursor, staging_query)
+        msg = "Staging listings record count = {}".format(staging_cnt)
+        logging.info(msg)
+    except Exception as e:
+        logging.error(e)
+        sys.exit(1)
+
+    try:
+        dwh_cnt = _return_count_of_records(cursor, dwh_query)
+        msg = "DWH listings record count = {}".format(staging_cnt)
+        logging.info(msg)
+    except Exception as e:
+        logging.error(e)
+        sys.exit(1)
+
+    if staging_cnt != dwh_cnt:
+        logging.error("Staging and dwh listings counts do not match. Please investigate.")
+        sys.exit(1)

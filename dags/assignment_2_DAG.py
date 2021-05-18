@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0,os.path.abspath(os.path.dirname(__file__)))
 from datetime import datetime, timedelta
 from code.extract.extract_data import get_airbnb_data, get_csv_data
-from code.data_warehouse.transform_data import transform_dim_date
+from code.data_warehouse.transform_data import transform_dim_date, post_load_listings_check
 from code.mappings.mapping_tables import write_mappings_file
 
 #########################################################
@@ -60,13 +60,13 @@ from airflow import DAG
 
 dag_default_args = {
     'owner': 'William Kent',
-    'start_date': datetime(2021, 4, 1),
+    'start_date': datetime(2020, 4, 1),
     'email': [],
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 3,
     'retry_delay': timedelta(minutes=3),
-    'depends_on_past': False,
+    'depends_on_past': True,
     'wait_for_downstream': False,
 }
 
@@ -74,7 +74,7 @@ dag = DAG(
     dag_id="Assignment_2_Airbnb_Data_Pipeline",
     default_args=dag_default_args,
     schedule_interval="@monthly",
-    catchup=False,
+    catchup=True,
     max_active_runs=1,
     concurrency=5
 )
@@ -104,6 +104,10 @@ def get_mapping_data(hook, file, cols, table, folder):
 
 def get_dim_date(hook, table, key, start, end):
     transform_dim_date(hook, table, key, start, end)
+
+
+def run_listings_post_load_check(hook, date):
+    post_load_listings_check(hook, date)
 
 
 def write_host_neighbourhood_mapping(hook, hnm_query, hnm_cols, hnm_file_name, folder_name):
@@ -369,6 +373,16 @@ populate_fact_lga_demographics = PostgresOperator(
     dag=dag
 )
 
+# Check listings data loaded correctly
+post_load_check = PythonOperator(
+    task_id="post_load_check",
+    python_callable=run_listings_post_load_check,
+    op_kwargs={"hook": pg_hook,
+               "date": '{{ ds }}'},
+    provide_context=True,
+    dag=dag
+)
+
 # Create mart schema if it doesn't already exist
 create_mart_schema = PostgresOperator(
     task_id="create_mart_schema",
@@ -428,7 +442,7 @@ write_host_neighbourhood_mapping = PythonOperator(
 create_staging_schema >> drop_listings_table >> create_listings_table >> \
 extract_monthly_airbnb_listings_data >> add_missing_host_neighbourhoods >> create_dwh_schema >> \
 create_dwh_tables >> create_dim_defaults >> populate_dim_date >> populate_fact_airbnb_listings >> \
-create_mart_schema >> create_mart_tables >> run_monthly_neighbourhood_stats >> \
+post_load_check >> create_mart_schema >> create_mart_tables >> run_monthly_neighbourhood_stats >> \
 write_host_neighbourhood_mapping
 
 create_staging_schema >> drop_lga_table >> create_lga_table >> extract_lga_data >> add_missing_host_neighbourhoods
@@ -440,9 +454,9 @@ extract_host_neighbourhood_mapping_data >> add_missing_host_neighbourhoods
 create_dim_defaults >> populate_dim_neighbourhood >> populate_fact_airbnb_listings
 create_dim_defaults >> populate_dim_accommodation >> populate_fact_airbnb_listings
 create_dim_defaults >> populate_dim_host >> populate_fact_airbnb_listings
-create_dim_defaults >> populate_dim_local_government_area >> populate_fact_lga_demographics >> create_mart_schema
+create_dim_defaults >> populate_dim_local_government_area >> populate_fact_lga_demographics >> post_load_check
 
-populate_dim_local_government_area >> populate_fact_airbnb_listings
+populate_dim_local_government_area >> populate_fact_airbnb_listings >> post_load_check
 
 create_mart_tables >> run_monthly_accommodation_type_stats >> write_host_neighbourhood_mapping
 create_mart_tables >> run_monthly_host_neighbourhood_stats >> write_host_neighbourhood_mapping

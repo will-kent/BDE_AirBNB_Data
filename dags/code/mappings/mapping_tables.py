@@ -42,4 +42,4 @@ def write_mappings_file(hook, query, col_names, file_name, data_folder):
         df.to_csv(file, header=col_names)
     except Exception as e:
         logging.error(e)
-        sys.exit("Failure to load csv file")
+        sys.exit(1)
